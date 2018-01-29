@@ -1,14 +1,20 @@
 diff -u -aur a/gcc/calls.c b/gcc/calls.c
 --- a/gcc/calls.c	2018-01-29 11:59:06.000000000 -0800
-+++ b/gcc/calls.c	2018-01-29 12:02:20.000000000 -0800
-@@ -225,6 +225,12 @@
++++ b/gcc/calls.c	2018-01-29 12:25:04.000000000 -0800
+@@ -225,6 +225,18 @@
  	       && targetm.small_register_classes_for_mode_p (FUNCTION_MODE))
  	      ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
  	      : memory_address (FUNCTION_MODE, funexp));
-+  else if (flag_pic && !flag_plt && fndecl_or_type
-+           && TREE_CODE (fndecl_or_type) == FUNCTION_DECL
-+           && !targetm.binds_local_p (fndecl_or_type))
++  else if (flag_pic
++          && fndecl_or_type
++          && TREE_CODE (fndecl_or_type) == FUNCTION_DECL
++          && (!flag_plt
++              || lookup_attribute ("noplt", DECL_ATTRIBUTES (fndecl_or_type)))
++          && !targetm.binds_local_p (fndecl_or_type))
 +    {
++      /* This is done only for PIC code.  There is no easy interface to force the
++        function address into GOT for non-PIC case.  non-PIC case needs to be
++        handled specially by the backend.  */
 +      funexp = force_reg (Pmode, funexp);
 +    }
    else if (! sibcallp)
